@@ -103,6 +103,27 @@ async function main() {
         }
       }
 
+      // Check and fix inline storages in actor.json
+      const actorJsonPath = path.join(actorDir, '.actor', 'actor.json');
+      if (await fs.pathExists(actorJsonPath)) {
+        try {
+          const actorJson = await fs.readJson(actorJsonPath);
+          let modified = false;
+          if (actorJson.storages && typeof actorJson.storages.dataset === 'object') {
+            console.log(`Extracting inline dataset schema for ${actor.name}...`);
+            const datasetSchemaPath = path.join(actorDir, '.actor', 'dataset_schema.json');
+            await fs.writeJson(datasetSchemaPath, actorJson.storages.dataset, { spaces: 2 });
+            actorJson.storages.dataset = './dataset_schema.json';
+            modified = true;
+          }
+          if (modified) {
+            await fs.writeJson(actorJsonPath, actorJson, { spaces: 2 });
+          }
+        } catch (e) {
+          console.warn(`Could not parse or fix actor.json for ${actor.name}:`, e.message);
+        }
+      }
+
       console.log(`Code saved locally.`);
 
       // Create GitHub repository
