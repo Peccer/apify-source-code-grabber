@@ -109,11 +109,13 @@ async function main() {
         try {
           const actorJson = await fs.readJson(actorJsonPath);
           let modified = false;
-          if (actorJson.storages && typeof actorJson.storages.dataset === 'object') {
-            console.log(`Extracting inline dataset schema for ${actor.name}...`);
-            const datasetSchemaPath = path.join(actorDir, '.actor', 'dataset_schema.json');
-            await fs.writeJson(datasetSchemaPath, actorJson.storages.dataset, { spaces: 2 });
-            actorJson.storages.dataset = './dataset_schema.json';
+          if (actorJson.storages !== undefined) {
+            if (typeof actorJson.storages.dataset === 'object') {
+              console.log(`Extracting inline dataset schema for ${actor.name}...`);
+              const datasetSchemaPath = path.join(actorDir, '.actor', 'dataset_schema.json');
+              await fs.writeJson(datasetSchemaPath, actorJson.storages.dataset, { spaces: 2 });
+            }
+            delete actorJson.storages;
             modified = true;
           }
           if (modified) {
